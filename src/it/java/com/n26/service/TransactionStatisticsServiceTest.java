@@ -1,8 +1,10 @@
 package com.n26.service;
 
+import com.n26.exception.TransactionExpiredException;
 import com.n26.model.Statistics;
 import com.n26.model.TransactionVO;
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -52,7 +54,7 @@ public class TransactionStatisticsServiceTest extends TestCase {
         ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
         ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
         ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
-        Long now = System.currentTimeMillis() - 10000; // Now-10s
+        Long now = System.currentTimeMillis() - 8000; // Now-8s
         Instant currentInstant = Instant.ofEpochMilli(now);
         String s = currentInstant.toString();
         TransactionVO transactionVO = new TransactionVO();
@@ -64,5 +66,39 @@ public class TransactionStatisticsServiceTest extends TestCase {
         mockMap.entrySet().stream().allMatch(v -> v.getValue().getMax().equals(transactionVO.getDecimalAmount()));
         mockMap.entrySet().stream().allMatch(v -> v.getValue().getMin().equals(transactionVO.getDecimalAmount()));
         mockMap.entrySet().stream().allMatch(v -> v.getValue().getAvg().equals(transactionVO.getDecimalAmount()));
+    }
+
+    @Test
+    public void testExpiredTransactionException() {
+        Map<Long, Statistics> mockMap = new HashMap<>();
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
+        Long now = System.currentTimeMillis() - 70000; // Now-70s
+
+        Instant currentInstant = Instant.ofEpochMilli(now);
+        String s = currentInstant.toString();
+        TransactionVO transactionVO = new TransactionVO();
+        transactionVO.setTimestamp(s);
+        transactionVO.setAmount("12.99");
+       try{
+           transactionStatisticsService.addTransaction(transactionVO);
+           Assert.fail("Should not come here!");
+       }catch (Exception ex) {
+           Assert.assertTrue(ex instanceof TransactionExpiredException);
+       }
+
+        now = System.currentTimeMillis() - 60000; // Now-60s
+        currentInstant = Instant.ofEpochMilli(now);
+        s = currentInstant.toString();
+        transactionVO.setTimestamp(s);
+        transactionVO.setAmount("13.99");
+        try{
+            transactionStatisticsService.addTransaction(transactionVO);
+            Assert.fail("Should not come here!");
+        }catch (Exception ex) {
+            Assert.assertTrue(ex instanceof TransactionExpiredException);
+        }
+
     }
 }

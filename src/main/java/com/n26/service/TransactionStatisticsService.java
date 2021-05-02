@@ -1,7 +1,9 @@
 package com.n26.service;
 
+import com.n26.exception.TransactionExpiredException;
 import com.n26.model.Statistics;
 import com.n26.model.TransactionVO;
+import com.n26.util.ApplicationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @Slf4j
 public class TransactionStatisticsService {
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    Map<Long, Statistics> statisticsConcurrentHashMap = new ConcurrentHashMap<>();
+    private Map<Long, Statistics> statisticsConcurrentHashMap = new ConcurrentHashMap<>();
     // map stores the stats of the past one minutes -- total space complexity 119
     // for a transaction with time T within current minute we will have 60 entries (current minute) + (T+59) entries
     // there will be overlaps but worst case space complexity will be 119
@@ -24,6 +26,12 @@ public class TransactionStatisticsService {
 
     public void addTransaction(TransactionVO transaction) {
         log.info("Adding new transaction");
+        if(ApplicationUtil.isPastMinuteTime(transaction.getTimestamp())){
+           throw new TransactionExpiredException();
+        }
+        if(ApplicationUtil.isFutureDate(transaction.getTimestamp())){
+            throw new TransactionExpiredException();
+        }
         readWriteLock.writeLock().lock();
         log.info("Issuing writeLock for new transaction!");
         Instant timestamp = Instant.parse(transaction.getTimestamp());
