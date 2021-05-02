@@ -2,6 +2,7 @@ package com.n26.service;
 
 import com.n26.model.Statistics;
 import com.n26.model.TransactionVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Service
+@Slf4j
 public class TransactionStatisticsService {
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     Map<Long, Statistics> statisticsConcurrentHashMap = new ConcurrentHashMap<>();
@@ -21,7 +23,9 @@ public class TransactionStatisticsService {
     // where C=119 is a constant and doesn't change with count of transactions
 
     public void addTransaction(TransactionVO transaction) {
+        log.info("Adding new transaction");
         readWriteLock.writeLock().lock();
+        log.info("Issuing writeLock for new transaction!");
         Instant timestamp = Instant.parse(transaction.getTimestamp());
         long timestampEpochSecond = timestamp.getEpochSecond();
         for(long ts = timestampEpochSecond; ts <timestampEpochSecond+60; ts++ ) {
@@ -31,6 +35,8 @@ public class TransactionStatisticsService {
             s.add(transaction.getDecimalAmount());
             statisticsConcurrentHashMap.putIfAbsent(ts, s);
         }
+        log.info("Releasing write lock after aggregating past minute stats");
         readWriteLock.writeLock().unlock();
+        log.info("End of Adding new transaction");
     }
 }
