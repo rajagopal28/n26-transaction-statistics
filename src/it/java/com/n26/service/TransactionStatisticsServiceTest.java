@@ -35,7 +35,7 @@ public class TransactionStatisticsServiceTest extends TestCase {
     }
 
     @Test
-    public void shouldAddTransactionToEntireMinute_fromGivenTransactionTime_Functional() {
+    public void shouldAddTransactionToEntireMinute_fromGivenTransactionTime_FunctionalComputation() {
         Map<Long, Statistics> mockMap = new HashMap<>();
         ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
         Long now = System.currentTimeMillis() - 10000; // Now-10s
@@ -46,6 +46,9 @@ public class TransactionStatisticsServiceTest extends TestCase {
         transactionVO.setAmount("10.12");
         transactionStatisticsService.addTransaction(transactionVO);
         LongStream.range(currentInstant.getEpochSecond(), currentInstant.getEpochSecond()+60).allMatch(mockMap::containsKey);
-        // Mockito.verify(mockMap, Mockito.times(60)).putIfAbsent(Mockito.anyLong(), Mockito.any(Statistics.class));
+        mockMap.entrySet().stream().allMatch(v -> v.getValue().getSum().equals(transactionVO.getDecimalAmount()));
+        mockMap.entrySet().stream().allMatch(v -> v.getValue().getMax().equals(transactionVO.getDecimalAmount()));
+        mockMap.entrySet().stream().allMatch(v -> v.getValue().getMin().equals(transactionVO.getDecimalAmount()));
+        mockMap.entrySet().stream().allMatch(v -> v.getValue().getAvg().equals(transactionVO.getDecimalAmount()));
     }
 }

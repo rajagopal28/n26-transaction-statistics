@@ -8,7 +8,7 @@ import lombok.ToString;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-@Setter
+@Data
 @ToString
 public class Statistics {
         private BigDecimal sum;
@@ -20,8 +20,8 @@ public class Statistics {
         public Statistics() {
                 this.sum = BigDecimal.ZERO;
                 this.avg = BigDecimal.ZERO;
-                this.min = BigDecimal.ZERO;
-                this.max = BigDecimal.ZERO;
+                this.min = BigDecimal.valueOf(Double.MAX_VALUE);
+                this.max = BigDecimal.valueOf(Double.MIN_VALUE);
                 this.count = BigInteger.ZERO;
         }
 
