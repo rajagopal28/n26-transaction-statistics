@@ -146,6 +146,55 @@ public class TransactionStatisticsServiceTest extends TestCase {
         }catch (Exception ex) {
             Assert.assertTrue(ex instanceof TransactionExpiredException);
         }
+    }
 
+    @Test
+    public void shouldGetTransactionCurrentMinute_MockObservable() {
+        Map<Long, Statistics> mockMap = Mockito.mock(Map.class);
+        ReadWriteLock mockLock = Mockito.mock(ReadWriteLock.class);
+        Lock mockReadLock = Mockito.mock(Lock.class);
+        // Lock mockWriteLock = Mockito.mock(Lock.class);
+        // Mockito.when(mockLock.writeLock()).thenReturn(mockWriteLock);
+        Mockito.when(mockLock.readLock()).thenReturn(mockReadLock);
+        Statistics mockStat = Mockito.mock(Statistics.class);
+        Mockito.when(mockMap.getOrDefault(Mockito.anyLong(), Mockito.any(Statistics.class))).thenReturn(mockStat);
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", mockLock);
+
+        Statistics statistics = transactionStatisticsService.getStatistics();
+        Assert.assertEquals(mockStat, statistics);
+        Mockito.verify(mockMap).getOrDefault(Mockito.anyLong(), Mockito.any(Statistics.class));
+        Mockito.verify(mockLock, Mockito.times(2)).readLock();
+        Mockito.verify(mockReadLock).lock();
+        Mockito.verify(mockReadLock).unlock();
+    }
+
+    @Test
+    public void shouldGetTransactionCurrentMinute_IfPresentValues_FunctionalComputation() throws Exception {
+        Map<Long, Statistics> mockMap = new HashMap<>();
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        Statistics s1 = new Statistics();
+        s1.setAvg(BigDecimal.valueOf(12.12));
+        s1.setSum(BigDecimal.valueOf(33.33));
+        mockMap.put(Instant.now().getEpochSecond(), s1);
+
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
+        Statistics actual1 = transactionStatisticsService.getStatistics();
+
+        Assert.assertEquals(s1, actual1);
+    }
+
+    @Test
+    public void shouldGetTransactionCurrentMinute_IfNotPresentValues_ShouldSendEmpty() throws Exception {
+        Map<Long, Statistics> mockMap = new HashMap<>();
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
+        Statistics actual2 = transactionStatisticsService.getStatistics();
+
+        Assert.assertEquals(BigDecimal.ZERO, actual2.getSum());
+        Assert.assertEquals(BigInteger.ZERO, actual2.getCount());
     }
 }

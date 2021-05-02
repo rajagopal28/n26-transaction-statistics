@@ -47,4 +47,16 @@ public class TransactionStatisticsService {
         readWriteLock.writeLock().unlock();
         log.info("End of Adding new transaction");
     }
+
+    public Statistics getStatistics() {
+        log.info("Trying to get statistics of past minute");
+        readWriteLock.readLock().lock();
+        log.info("Issuing readLock for getting current minute stats!");
+        Long currentMinuteTimeStamp = Instant.now().getEpochSecond();
+        Statistics currentMinuteStat = statisticsConcurrentHashMap.getOrDefault(currentMinuteTimeStamp, new Statistics());
+        log.info("Releasing readLock after getting current minute stats!");
+        readWriteLock.readLock().unlock();
+        log.info("End of fetching current minute stat!");
+        return currentMinuteStat;
+    }
 }
