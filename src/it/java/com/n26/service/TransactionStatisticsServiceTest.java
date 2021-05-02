@@ -12,9 +12,12 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -66,6 +69,50 @@ public class TransactionStatisticsServiceTest extends TestCase {
         mockMap.entrySet().stream().allMatch(v -> v.getValue().getMax().equals(transactionVO.getDecimalAmount()));
         mockMap.entrySet().stream().allMatch(v -> v.getValue().getMin().equals(transactionVO.getDecimalAmount()));
         mockMap.entrySet().stream().allMatch(v -> v.getValue().getAvg().equals(transactionVO.getDecimalAmount()));
+    }
+
+    @Test
+    public void shouldAddTransactionToEntireMinute_fromGivenTransactionTime_FunctionalComputation2() throws Exception {
+        Map<Long, Statistics> mockMap = new HashMap<>();
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
+        Long t1s = System.currentTimeMillis() - 59000; // Now-59s
+        Instant t1i = Instant.ofEpochMilli(t1s);
+        TransactionVO t1 = new TransactionVO();
+        t1.setTimestamp(t1i.toString());
+        t1.setAmount("10.12");
+        transactionStatisticsService.addTransaction(t1);
+        Long t2s = System.currentTimeMillis() - 30000; // Now-30s
+        Instant t2i = Instant.ofEpochMilli(t2s);
+        TransactionVO t2 = new TransactionVO();
+        t2.setTimestamp(t2i.toString());
+        t2.setAmount("11.12");
+        transactionStatisticsService.addTransaction(t2);
+
+        Long t3s = System.currentTimeMillis() - 1000; // Now-1s
+        Instant t3i = Instant.ofEpochMilli(t3s);
+        TransactionVO t3 = new TransactionVO();
+        t3.setTimestamp(t3i.toString());
+        t3.setAmount("12.12");
+        transactionStatisticsService.addTransaction(t3);
+
+        Long t4s = System.currentTimeMillis() - 58000; // Now-58s
+        Instant t4i = Instant.ofEpochMilli(t4s);
+        TransactionVO t4 = new TransactionVO();
+        t4.setTimestamp(t4i.toString());
+        t4.setAmount("13.12");
+        transactionStatisticsService.addTransaction(t4);
+
+        Thread.sleep(1000); // thread sleep to expire t1 hence we will get only [t2,t3,t4]
+
+        Long now = Instant.now().getEpochSecond();
+        Statistics statistics = mockMap.get(now);
+        Assert.assertEquals(BigDecimal.valueOf(36.36), statistics.getSum());
+        Assert.assertEquals(BigDecimal.valueOf(12.12), statistics.getAvg());
+        Assert.assertEquals(BigDecimal.valueOf(11.12), statistics.getMin());
+        Assert.assertEquals(BigDecimal.valueOf(13.12), statistics.getMax());
+        Assert.assertEquals(BigInteger.valueOf(3), statistics.getCount());
     }
 
     @Test
