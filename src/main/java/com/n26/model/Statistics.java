@@ -1,5 +1,6 @@
 package com.n26.model;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,4 +16,26 @@ public class Statistics {
         private BigDecimal max;
         private BigDecimal min;
         private BigInteger count;
+
+        public Statistics() {
+                this.sum = BigDecimal.ZERO;
+                this.avg = BigDecimal.ZERO;
+                this.min = BigDecimal.ZERO;
+                this.max = BigDecimal.ZERO;
+                this.count = BigInteger.ZERO;
+        }
+
+        public void minOf(BigDecimal value) {
+                this.min = this.min.min(value);
+        }
+
+        public void maxOf(BigDecimal value) {
+                this.max = this.max.max(value);
+        }
+
+        public void add(BigDecimal value) {
+                this.sum = this.sum.add(value);
+                this.count = this.count.add(BigInteger.ONE);
+                this.avg = this.sum.divide(BigDecimal.valueOf(count.longValue()), 2);
+        }
 }
