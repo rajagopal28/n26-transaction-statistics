@@ -242,4 +242,46 @@ public class TransactionStatisticsServiceTest extends TestCase {
         Mockito.verify(mockMap).remove(now-70);
         Mockito.verify(mockMap).remove(now-80);
     }
+
+    @Test
+    public void shouldClearAllStatistics_Functional() throws Exception {
+        Map<Long, Statistics> mockMap = new HashMap<>();
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        Long now = Instant.now().getEpochSecond();
+
+        mockMap.put(now, new Statistics());
+        mockMap.put(now-10, new Statistics());
+        mockMap.put(now-60, new Statistics());
+        mockMap.put(now-70, new Statistics());
+        mockMap.put(now-80, new Statistics());
+
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
+        transactionStatisticsService.clearAllStatistics();
+
+        Assert.assertTrue(mockMap.isEmpty());
+    }
+
+    @Test
+    public void shouldClearAllStatistics_MockObservable() throws Exception {
+        Map<Long, Statistics> mockMap = Mockito.mock(Map.class);
+        Mockito.when(mockMap.size()).thenReturn(5);
+        Long now = Instant.now().getEpochSecond();
+        Mockito.when(mockMap.keySet()).thenReturn(new HashSet<>(Arrays.asList(now, now+10, now-10, now-60, now-70, now-80)));
+
+        ReadWriteLock mockLock = Mockito.mock(ReadWriteLock.class);
+        Lock mockWriteLock = Mockito.mock(Lock.class);
+        Mockito.when(mockLock.writeLock()).thenReturn(mockWriteLock);
+        Statistics mockStat = Mockito.mock(Statistics.class);
+        Mockito.when(mockMap.getOrDefault(Mockito.anyLong(), Mockito.any(Statistics.class))).thenReturn(mockStat);
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", mockLock);
+
+        transactionStatisticsService.clearAllStatistics();
+
+        Mockito.verify(mockLock, Mockito.times(2)).writeLock();
+        Mockito.verify(mockWriteLock).lock();
+        Mockito.verify(mockWriteLock).unlock();
+        Mockito.verify(mockMap).clear();
+    }
 }

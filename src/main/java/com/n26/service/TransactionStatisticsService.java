@@ -78,4 +78,14 @@ public class TransactionStatisticsService {
         log.info("End of fetching current minute stat!");
         return currentMinuteStat;
     }
+
+    public void clearAllStatistics() {
+        log.info("Trying to clear all existing statistics");
+        readWriteLock.writeLock().lock();
+        log.info("Issuing writeLock for clearing all stats!");
+        statisticsConcurrentHashMap.clear();
+        log.info("Releasing writeLock after clearing stats!");
+        readWriteLock.writeLock().unlock();
+        log.info("End of clearing all statistics in system!");
+    }
 }
