@@ -17,7 +17,6 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -39,13 +38,13 @@ public class TransactionStatisticsServiceTest extends TestCase {
         Mockito.when(mockMap.getOrDefault(Mockito.anyLong(), Mockito.any(Statistics.class))).thenReturn(Mockito.mock(Statistics.class));
         ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
         ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", mockLock);
-        Long now = System.currentTimeMillis() - 10000; // Now-10s
+        Long now = System.currentTimeMillis() - 10000; // Now-10s ==> txn valid for Now+50s
         String s = Instant.ofEpochMilli(now).toString();
         TransactionVO transactionVO = new TransactionVO();
         transactionVO.setTimestamp(s);
         transactionVO.setAmount("10.12");
         transactionStatisticsService.addTransaction(transactionVO);
-        Mockito.verify(mockMap, Mockito.times(60)).putIfAbsent(Mockito.anyLong(), Mockito.any(Statistics.class));
+        Mockito.verify(mockMap, Mockito.times(50)).putIfAbsent(Mockito.anyLong(), Mockito.any(Statistics.class));
         Mockito.verify(mockLock, Mockito.times(2)).writeLock();
         Mockito.verify(mockWriteLock).lock();
         Mockito.verify(mockWriteLock).unlock();

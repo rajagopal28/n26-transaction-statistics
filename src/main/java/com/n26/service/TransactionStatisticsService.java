@@ -35,8 +35,10 @@ public class TransactionStatisticsService {
         readWriteLock.writeLock().lock();
         log.info("Issuing writeLock for new transaction!");
         Instant timestamp = Instant.parse(transaction.getTimestamp());
+        long now = Instant.now().getEpochSecond();
         long timestampEpochSecond = timestamp.getEpochSecond();
-        for(long ts = timestampEpochSecond; ts <timestampEpochSecond+60; ts++ ) {
+        // only take in to account from current second even if the txn is valid for duration past that
+        for(long ts = now; ts <timestampEpochSecond+60; ts++ ) {
             Statistics s = statisticsConcurrentHashMap.getOrDefault(ts, new Statistics());
             s.maxOf(transaction.getDecimalAmount());
             s.minOf(transaction.getDecimalAmount());
