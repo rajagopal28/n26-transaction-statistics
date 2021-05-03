@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -48,6 +50,19 @@ public class TransactionStatisticsService {
         log.info("Releasing write lock after aggregating past minute stats");
         readWriteLock.writeLock().unlock();
         log.info("End of Adding new transaction");
+    }
+
+    public void cleanupPastTransactions() {
+        log.info("Trying to cleanup statistics that are not in current minute :: " + Instant.now().toString());
+        log.info("Acquiring writeLock for cleaning up past minute stats!");
+        readWriteLock.writeLock().lock();
+        log.info("Current size of transactionsMap before cleanup :: "+statisticsConcurrentHashMap.size());
+        Set<Long> keysToRemove = statisticsConcurrentHashMap.keySet().stream().filter(ApplicationUtil::isPastMinuteTimeStamp).collect(Collectors.toSet());
+        keysToRemove.forEach(statisticsConcurrentHashMap::remove);
+        log.info("Current size of transactionsMap after cleanup :: "+statisticsConcurrentHashMap.size());
+        log.info("Releasing writeLock after cleaning up past minute stats!");
+        readWriteLock.writeLock().unlock();
+        log.info("Cleanup completed for statistics that are not in current minute");
     }
 
     public Statistics getStatistics() {

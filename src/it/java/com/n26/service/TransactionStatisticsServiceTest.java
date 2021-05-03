@@ -15,7 +15,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -195,5 +197,49 @@ public class TransactionStatisticsServiceTest extends TestCase {
 
         Assert.assertEquals(BigDecimal.ZERO, actual2.getSum());
         Assert.assertEquals(BigInteger.ZERO, actual2.getCount());
+    }
+
+
+    @Test
+    public void shouldCleanupStatisticsFromPastMinute_Functional() throws Exception {
+        Map<Long, Statistics> mockMap = new HashMap<>();
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        Long now = Instant.now().getEpochSecond();
+
+        mockMap.put(now, new Statistics());
+        mockMap.put(now-10, new Statistics());
+        mockMap.put(now-60, new Statistics());
+        mockMap.put(now-70, new Statistics());
+        mockMap.put(now-80, new Statistics());
+
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
+        transactionStatisticsService.cleanupPastTransactions();
+
+        Assert.assertEquals(3, mockMap.size());
+    }
+
+    @Test
+    public void shouldCleanupStatisticsFromPastMinute_MockObservable() {
+        Map<Long, Statistics> mockMap = Mockito.mock(Map.class);
+        Mockito.when(mockMap.size()).thenReturn(5);
+        Long now = Instant.now().getEpochSecond();
+        Mockito.when(mockMap.keySet()).thenReturn(new HashSet<>(Arrays.asList(now, now+10, now-10, now-60, now-70, now-80)));
+
+        ReadWriteLock mockLock = Mockito.mock(ReadWriteLock.class);
+        Lock mockWriteLock = Mockito.mock(Lock.class);
+        Mockito.when(mockLock.writeLock()).thenReturn(mockWriteLock);
+        Statistics mockStat = Mockito.mock(Statistics.class);
+        Mockito.when(mockMap.getOrDefault(Mockito.anyLong(), Mockito.any(Statistics.class))).thenReturn(mockStat);
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", mockLock);
+
+        transactionStatisticsService.cleanupPastTransactions();
+
+        Mockito.verify(mockLock, Mockito.times(2)).writeLock();
+        Mockito.verify(mockWriteLock).lock();
+        Mockito.verify(mockWriteLock).unlock();
+        Mockito.verify(mockMap).remove(now-70);
+        Mockito.verify(mockMap).remove(now-80);
     }
 }
