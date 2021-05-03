@@ -5,6 +5,7 @@ import com.n26.model.Statistics;
 import com.n26.model.TransactionVO;
 import com.n26.util.ApplicationUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -52,6 +53,7 @@ public class TransactionStatisticsService {
         log.info("End of Adding new transaction");
     }
 
+    @Scheduled(fixedDelay = ApplicationUtil.TEN_SECOND_IN_MILLIS)
     public void cleanupPastTransactions() {
         log.info("Trying to cleanup statistics that are not in current minute :: " + Instant.now().toString());
         log.info("Acquiring writeLock for cleaning up past minute stats!");
