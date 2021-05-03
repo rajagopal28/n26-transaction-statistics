@@ -12,6 +12,7 @@ public interface ApplicationUtil {
     int ONE_SECOND_IN_MILLIS = 1000;
     long TEN_SECOND_IN_MILLIS = 10*ONE_SECOND_IN_MILLIS;
     String VALID_DECIMAL_NUMBER_STRING = "^\\d*\\.\\d+|\\d+\\.\\d*$";
+    String APPLICATION_PATH_GET_STATISTICS = "/statistics";
     static long getCurrentTimeInUTC() {
         return Instant.now().toEpochMilli();
     }
