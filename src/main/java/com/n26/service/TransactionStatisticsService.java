@@ -29,6 +29,8 @@ public class TransactionStatisticsService {
 
     public void addTransaction(TransactionVO transaction) {
         log.info("Adding new transaction");
+        log.info("Validating incoming transaction request");
+        ApplicationUtil.validateTransactionData(transaction);
         if(ApplicationUtil.isPastMinuteTime(transaction.getTimestamp())){
            throw new TransactionExpiredException();
         }

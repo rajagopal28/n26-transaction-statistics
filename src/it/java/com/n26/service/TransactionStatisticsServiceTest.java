@@ -229,8 +229,6 @@ public class TransactionStatisticsServiceTest extends TestCase {
         ReadWriteLock mockLock = Mockito.mock(ReadWriteLock.class);
         Lock mockWriteLock = Mockito.mock(Lock.class);
         Mockito.when(mockLock.writeLock()).thenReturn(mockWriteLock);
-        Statistics mockStat = Mockito.mock(Statistics.class);
-        Mockito.when(mockMap.getOrDefault(Mockito.anyLong(), Mockito.any(Statistics.class))).thenReturn(mockStat);
         ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
         ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", mockLock);
 
@@ -265,15 +263,9 @@ public class TransactionStatisticsServiceTest extends TestCase {
     @Test
     public void shouldClearAllStatistics_MockObservable() throws Exception {
         Map<Long, Statistics> mockMap = Mockito.mock(Map.class);
-        Mockito.when(mockMap.size()).thenReturn(5);
-        Long now = Instant.now().getEpochSecond();
-        Mockito.when(mockMap.keySet()).thenReturn(new HashSet<>(Arrays.asList(now, now+10, now-10, now-60, now-70, now-80)));
-
         ReadWriteLock mockLock = Mockito.mock(ReadWriteLock.class);
         Lock mockWriteLock = Mockito.mock(Lock.class);
         Mockito.when(mockLock.writeLock()).thenReturn(mockWriteLock);
-        Statistics mockStat = Mockito.mock(Statistics.class);
-        Mockito.when(mockMap.getOrDefault(Mockito.anyLong(), Mockito.any(Statistics.class))).thenReturn(mockStat);
         ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
         ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", mockLock);
 
