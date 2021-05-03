@@ -97,4 +97,12 @@ public class ApplicationUtilTest extends TestCase {
         }
     }
 
+    @Test
+    public void testSet2ScaledBigDecimalMethods_SuccessCases() {
+        Assert.assertEquals("0.00", ApplicationUtil.get2ScaledBigDecimal().toString());
+        Assert.assertEquals("12.45", ApplicationUtil.get2ScaledBigDecimal("12.4532423").toString());
+        Assert.assertEquals("12.22", ApplicationUtil.get2ScaledBigDecimal("12.22").toString());
+        Assert.assertEquals("120.00", ApplicationUtil.get2ScaledBigDecimal("120").toString());
+    }
+
 }

@@ -3,17 +3,31 @@ package com.n26.util;
 import com.n26.exception.InvalidRequestException;
 import com.n26.exception.UnrecognizedDataFormatException;
 import com.n26.model.TransactionVO;
-import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
 public interface ApplicationUtil {
     int ONE_SECOND_IN_MILLIS = 1000;
-    long TEN_SECOND_IN_MILLIS = 10*ONE_SECOND_IN_MILLIS;
+    long TEN_SECOND_IN_MILLIS = 10 * ONE_SECOND_IN_MILLIS;
     String VALID_DECIMAL_NUMBER_STRING = "^\\d*\\.\\d+|\\d+\\.\\d*|\\d+$";
+    int TWO_DECIMAL_SCALE = 2;
+    String AMOUNT_ZERO_STRING = "0.00";
     String APPLICATION_PATH_GET_STATISTICS = "/statistics";
     String APPLICATION_PATH_TRANSACTIONS = "/transactions";
+
+    static BigDecimal get2ScaledBigDecimal() {
+        return get2ScaledBigDecimal(AMOUNT_ZERO_STRING);
+    }
+
+    static BigDecimal get2ScaledBigDecimal(String amount) {
+        return setBigDecimalScale(new BigDecimal(amount));
+    }
+
+    static BigDecimal setBigDecimalScale(BigDecimal bigDecimal) {
+        return  bigDecimal.setScale(TWO_DECIMAL_SCALE, BigDecimal.ROUND_HALF_UP);
+    }
+
     static long getCurrentTimeInUTC() {
         return Instant.now().toEpochMilli();
     }
