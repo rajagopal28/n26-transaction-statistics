@@ -109,10 +109,10 @@ public class TransactionStatisticsServiceTest extends TestCase {
 
         Long now = Instant.now().getEpochSecond();
         Statistics statistics = mockMap.get(now);
-        Assert.assertEquals(BigDecimal.valueOf(36.36), statistics.getSum());
-        Assert.assertEquals(BigDecimal.valueOf(12.12), statistics.getAvg());
-        Assert.assertEquals(BigDecimal.valueOf(11.12), statistics.getMin());
-        Assert.assertEquals(BigDecimal.valueOf(13.12), statistics.getMax());
+        Assert.assertEquals("36.36", statistics.getSum());
+        Assert.assertEquals("12.12", statistics.getAvg());
+        Assert.assertEquals("11.12", statistics.getMin());
+        Assert.assertEquals("13.12", statistics.getMax());
         Assert.assertEquals(BigInteger.valueOf(3), statistics.getCount());
     }
 
@@ -195,7 +195,7 @@ public class TransactionStatisticsServiceTest extends TestCase {
         ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
         Statistics actual2 = transactionStatisticsService.getStatistics();
 
-        Assert.assertEquals(BigDecimal.ZERO, actual2.getSum());
+        Assert.assertEquals("0.00", actual2.getSum());
         Assert.assertEquals(BigInteger.ZERO, actual2.getCount());
     }
 

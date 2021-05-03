@@ -1,5 +1,6 @@
 package com.n26.model;
 
+import com.n26.util.ApplicationUtil;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -14,6 +15,6 @@ public class TransactionVO {
     @NotNull
     private String timestamp;
     public BigDecimal getDecimalAmount() {
-        return new BigDecimal(this.amount);
+        return ApplicationUtil.get2ScaledBigDecimal(this.amount);
     }
 }

@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public class ApplicationUtilTest extends TestCase {
@@ -92,7 +93,6 @@ public class ApplicationUtilTest extends TestCase {
             txn.setAmount("120");
             ApplicationUtil.validateTransactionData(txn);
         } catch (Exception ex) {
-            ex.printStackTrace();
             Assert.fail("Should not come here");
         }
     }
@@ -103,6 +103,8 @@ public class ApplicationUtilTest extends TestCase {
         Assert.assertEquals("12.45", ApplicationUtil.get2ScaledBigDecimal("12.4532423").toString());
         Assert.assertEquals("12.22", ApplicationUtil.get2ScaledBigDecimal("12.22").toString());
         Assert.assertEquals("120.00", ApplicationUtil.get2ScaledBigDecimal("120").toString());
+        Assert.assertEquals("49.69", ApplicationUtil.get2ScaledBigDecimal("49.694495").toString());
+        Assert.assertEquals("49.69", ApplicationUtil.get2ScaledBigDecimal("99388.99").divide(BigDecimal.valueOf(2000L), BigDecimal.ROUND_HALF_UP).toString());
     }
 
 }
