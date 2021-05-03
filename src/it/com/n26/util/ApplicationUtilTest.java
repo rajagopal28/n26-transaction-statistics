@@ -31,4 +31,11 @@ public class ApplicationUtilTest extends TestCase {
         Assert.assertEquals( 0, ApplicationUtil.getTimeDifferenceFromNow(Instant.now().toString()));
     }
 
+    @Test
+    public void testGetPastMinuteTimeStamp_FromGivenTimeToNow() {
+        Assert.assertFalse(ApplicationUtil.isPastMinuteTimeStamp(Instant.now().plusMillis(5000).getEpochSecond()));
+        Assert.assertTrue(ApplicationUtil.isPastMinuteTimeStamp(Instant.now().minusMillis(61000).getEpochSecond()));
+        Assert.assertFalse(ApplicationUtil.isPastMinuteTimeStamp(Instant.now().getEpochSecond()));
+    }
+
 }
