@@ -30,4 +30,12 @@ public class StatisticsControllerTest extends TestCase {
         Assert.assertEquals(expected, statistics.getBody());
         Assert.assertEquals(HttpStatus.OK, statistics.getStatusCode());
     }
+
+
+    @Test
+    public void testControllerInvokeDeleteStatisticsCall() {
+        ResponseEntity<Void> voidResponseEntity = statisticsController.deleteTransactions();
+        Mockito.verify(transactionStatisticsService).clearAllStatistics();
+        Assert.assertEquals(HttpStatus.NO_CONTENT, voidResponseEntity.getStatusCode());
+    }
 }

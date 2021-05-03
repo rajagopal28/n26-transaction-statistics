@@ -20,4 +20,10 @@ public class StatisticsController {
         Statistics statistics = transactionStatisticsService.getStatistics();
         return new ResponseEntity<>(statistics, HttpStatus.OK);
     }
+
+    @RequestMapping(value = ApplicationUtil.APPLICATION_PATH_TRANSACTIONS, method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteTransactions() {
+        transactionStatisticsService.clearAllStatistics();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
