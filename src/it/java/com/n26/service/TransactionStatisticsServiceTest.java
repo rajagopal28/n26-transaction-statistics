@@ -1,6 +1,7 @@
 package com.n26.service;
 
 import com.n26.exception.TransactionExpiredException;
+import com.n26.exception.UnrecognizedDataFormatException;
 import com.n26.model.Statistics;
 import com.n26.model.TransactionVO;
 import junit.framework.TestCase;
@@ -147,6 +148,28 @@ public class TransactionStatisticsServiceTest extends TestCase {
         }catch (Exception ex) {
             Assert.assertTrue(ex instanceof TransactionExpiredException);
         }
+    }
+
+    @Test
+    public void testFutureTransactionException() {
+        Map<Long, Statistics> mockMap = new HashMap<>();
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        ReflectionTestUtils.setField(transactionStatisticsService, "statisticsConcurrentHashMap", mockMap);
+        ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
+        Long now = System.currentTimeMillis() + 10000; // Now+10s
+
+        Instant currentInstant = Instant.ofEpochMilli(now);
+        String s = currentInstant.toString();
+        TransactionVO transactionVO = new TransactionVO();
+        transactionVO.setTimestamp(s);
+        transactionVO.setAmount("12.99");
+        try{
+            transactionStatisticsService.addTransaction(transactionVO);
+            Assert.fail("Should not come here!");
+        }catch (Exception ex) {
+            Assert.assertTrue(ex instanceof UnrecognizedDataFormatException);
+        }
+
     }
 
     @Test

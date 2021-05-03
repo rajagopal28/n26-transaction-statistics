@@ -1,6 +1,5 @@
 package com.n26.util;
 
-import com.n26.exception.InvalidRequestException;
 import com.n26.exception.UnrecognizedDataFormatException;
 import com.n26.model.TransactionVO;
 import junit.framework.TestCase;
@@ -51,7 +50,7 @@ public class ApplicationUtilTest extends TestCase {
             ApplicationUtil.validateTransactionData(txn);
             Assert.fail("Should not come here");
         } catch (Exception ex) {
-            Assert.assertTrue(ex instanceof InvalidRequestException);
+            Assert.assertTrue(ex instanceof UnrecognizedDataFormatException);
         }
         try{
             txn.setAmount("");
@@ -59,7 +58,7 @@ public class ApplicationUtilTest extends TestCase {
             ApplicationUtil.validateTransactionData(txn);
             Assert.fail("Should not come here");
         } catch (Exception ex) {
-            Assert.assertTrue(ex instanceof InvalidRequestException);
+            Assert.assertTrue(ex instanceof UnrecognizedDataFormatException);
         }
         try{
             txn.setAmount("12.12");
@@ -67,7 +66,7 @@ public class ApplicationUtilTest extends TestCase {
             ApplicationUtil.validateTransactionData(txn);
             Assert.fail("Should not come here");
         } catch (Exception ex) {
-            Assert.assertTrue(ex instanceof InvalidRequestException);
+            Assert.assertTrue(ex instanceof UnrecognizedDataFormatException);
         }
         try{
             txn.setAmount("12.12");

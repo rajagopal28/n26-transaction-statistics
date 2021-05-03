@@ -1,6 +1,7 @@
 package com.n26.service;
 
 import com.n26.exception.TransactionExpiredException;
+import com.n26.exception.UnrecognizedDataFormatException;
 import com.n26.model.Statistics;
 import com.n26.model.TransactionVO;
 import com.n26.util.ApplicationUtil;
@@ -35,7 +36,7 @@ public class TransactionStatisticsService {
            throw new TransactionExpiredException();
         }
         if(ApplicationUtil.isFutureDate(transaction.getTimestamp())){
-            throw new TransactionExpiredException();
+            throw new UnrecognizedDataFormatException();
         }
         readWriteLock.writeLock().lock();
         log.info("Issuing writeLock for new transaction!");

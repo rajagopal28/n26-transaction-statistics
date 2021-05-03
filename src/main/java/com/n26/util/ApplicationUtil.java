@@ -1,6 +1,5 @@
 package com.n26.util;
 
-import com.n26.exception.InvalidRequestException;
 import com.n26.exception.UnrecognizedDataFormatException;
 import com.n26.model.TransactionVO;
 
@@ -10,7 +9,7 @@ import java.time.Instant;
 public interface ApplicationUtil {
     int ONE_SECOND_IN_MILLIS = 1000;
     long TEN_SECOND_IN_MILLIS = 10 * ONE_SECOND_IN_MILLIS;
-    String VALID_DECIMAL_NUMBER_STRING = "^\\d*\\.\\d+|\\d+\\.\\d*|\\d+$";
+    String VALID_DECIMAL_NUMBER_STRING_REGEX = "^\\d*\\.\\d+|\\d+\\.\\d*|\\d+$";
     int TWO_DECIMAL_SCALE = 2;
     String AMOUNT_ZERO_STRING = "0.00";
     String APPLICATION_PATH_GET_STATISTICS = "/statistics";
@@ -25,7 +24,7 @@ public interface ApplicationUtil {
     }
 
     static BigDecimal setBigDecimalScale(BigDecimal bigDecimal) {
-        return  bigDecimal.setScale(TWO_DECIMAL_SCALE, BigDecimal.ROUND_HALF_UP);
+        return  bigDecimal.setScale(TWO_DECIMAL_SCALE, BigDecimal.ROUND_DOWN);
     }
 
     static long getCurrentTimeInUTC() {
@@ -54,7 +53,7 @@ public interface ApplicationUtil {
     }
 
     static void validateTransactionData(TransactionVO txn) {
-        if(txn.getAmount().isEmpty() || !txn.getAmount().matches(VALID_DECIMAL_NUMBER_STRING) || txn.getTimestamp().isEmpty()) throw new InvalidRequestException();
+        if(txn.getAmount().isEmpty() || !txn.getAmount().matches(VALID_DECIMAL_NUMBER_STRING_REGEX) || txn.getTimestamp().isEmpty()) throw new UnrecognizedDataFormatException();
         try{
             Instant.parse(txn.getTimestamp());
         }catch (Exception ex) {
