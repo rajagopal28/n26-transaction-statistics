@@ -85,7 +85,14 @@ public class ApplicationUtilTest extends TestCase {
             txn.setAmount("12.343");
             txn.setTimestamp(Instant.now().toString());
             ApplicationUtil.validateTransactionData(txn);
+
+            txn.setAmount("12.23");
+            ApplicationUtil.validateTransactionData(txn);
+
+            txn.setAmount("120");
+            ApplicationUtil.validateTransactionData(txn);
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail("Should not come here");
         }
     }

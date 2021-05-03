@@ -11,7 +11,7 @@ import java.time.Instant;
 public interface ApplicationUtil {
     int ONE_SECOND_IN_MILLIS = 1000;
     long TEN_SECOND_IN_MILLIS = 10*ONE_SECOND_IN_MILLIS;
-    String VALID_DECIMAL_NUMBER_STRING = "^\\d*\\.\\d+|\\d+\\.\\d*$";
+    String VALID_DECIMAL_NUMBER_STRING = "^\\d*\\.\\d+|\\d+\\.\\d*|\\d+$";
     String APPLICATION_PATH_GET_STATISTICS = "/statistics";
     String APPLICATION_PATH_TRANSACTIONS = "/transactions";
     static long getCurrentTimeInUTC() {
