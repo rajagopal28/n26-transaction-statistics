@@ -17,17 +17,40 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+/**
+ *
+ * Transaction Statistics Service takes care of all the Data Manipulation calls related to adding transactions,
+ * getting current minute statistics and deleting all transaction data
+ *
+ * @author Rajagopal
+ *
+ */
 @Service
 @Slf4j
 public class TransactionStatisticsService {
+    // Share-Exclusive lock application for Reads/Writes on the shared resource
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    private Map<Long, Statistics> statisticsConcurrentHashMap = new ConcurrentHashMap<>();
-    // map stores the stats of the past one minutes -- total space complexity 119
-    // for a transaction with time T within current minute we will have 60 entries (current minute) + (T+59) entries
-    // there will be overlaps but worst case space complexity will be 119
-    // Overall worst case complexity in Big-O ==> O(C) ==> O(1)
-    // where C=119 is a constant and doesn't change with count of transactions
 
+    /*
+     * map stores the stats of the past one minutes -- total space complexity 119
+     * for a transaction with time T within current minute we will have 60 entries (current minute) + (T+59) entries
+     * there will be overlaps but worst case space complexity will be 119
+     * Overall worst case complexity in Big-O ==> O(C) ==> O(1)
+     * where C=119 is a constant and doesn't change with count of transactions
+    */
+    private Map<Long, Statistics> statisticsConcurrentHashMap = new ConcurrentHashMap<>();
+
+    /**
+     * Adds new transaction to create statistics <br/>
+     *
+     * <i> Validations employed are to check the validity of timestamp and amount fields
+     * Exceptions thrown on validation failures
+     * Write lock is acquired to compute all the valid statistics related to the given transaction.</i><br/>
+     *
+     * Overall worst case complexity in Big-O ==> O(C) ==> O(1)<br/>
+     *
+     * Does not return any value
+     */
     public void addTransaction(TransactionVO transaction) {
         log.info("Adding new transaction");
         log.info("Validating incoming transaction request");
@@ -56,6 +79,15 @@ public class TransactionStatisticsService {
         log.info("End of Adding new transaction");
     }
 
+    /**
+     * Scheduled method to clear the transaction data every 10Seconds <br/>
+     *
+     * <i> Find all the expired timestamps and remove them from the MapStore
+     *  Write locks acquired until all the expired statistics are removed from Store</i><br/>
+     *
+     * Overall worst case complexity in Big-O ==> O(C) ==> O(1)<br/>
+     *  Does not return any value
+     */
     @Scheduled(fixedDelay = ApplicationUtil.TEN_SECOND_IN_MILLIS)
     public void cleanupPastTransactions() {
         log.info("Trying to cleanup statistics that are not in current minute :: " + Instant.now().toString());
@@ -70,6 +102,17 @@ public class TransactionStatisticsService {
         log.info("Cleanup completed for statistics that are not in current minute");
     }
 
+    /**
+     * Get current minute Statistics <br/>
+     *
+     * <i> Computed Statistics for the current minute is fetched from the Map. <br/>
+     * If no computed statistic is present, we will get the blank statistic with all Zeros
+     * Read lock acquired until the statistic is fetched </i><br/>
+     * Overall worst case complexity in Big-O ==> O(1).
+     * Given that ConcurrentHashMap.get has O(1) time to fetch based in the Key<br/>
+     *
+     * @return Statistics
+     */
     public Statistics getStatistics() {
         log.info("Trying to get statistics of past minute");
         readWriteLock.readLock().lock();
@@ -82,6 +125,16 @@ public class TransactionStatisticsService {
         return currentMinuteStat;
     }
 
+    /**
+     * Removed all statistics data <br/>
+     *
+     * <i> Validations employed are to check the validity of timestamp and amount fields
+     * Exceptions thrown on validation failures.
+     * Write lock is held until the data is cleared.</i><br/>
+     *
+     * Overall worst case complexity in Big-O ==> O(1)<br/>
+     *  Does not return any value
+     */
     public void clearAllStatistics() {
         log.info("Trying to clear all existing statistics");
         readWriteLock.writeLock().lock();

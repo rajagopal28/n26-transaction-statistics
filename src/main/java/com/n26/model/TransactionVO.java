@@ -14,6 +14,13 @@ public class TransactionVO {
 
     @NotNull
     private String timestamp;
+
+    /*
+     *
+     * Method to get the BigDecimal value of the amount
+     *
+     * @return the String value of the amount
+     * */
     public BigDecimal getDecimalAmount() {
         return ApplicationUtil.get2ScaledBigDecimal(this.amount);
     }
