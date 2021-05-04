@@ -33,10 +33,10 @@ public class TransactionStatisticsService {
 
     /*
      * map stores the stats of the past one minutes -- total space complexity 119
-     * for a transaction with time T within current minute we will have 60 entries (current minute) + (T+59) entries
+     * for a transaction with time T within current minute(Now-x) we will have Now+x entries (current minute) + (T+59) entries
      * there will be overlaps but worst case space complexity will be 119
      * Overall worst case complexity in Big-O ==> O(C) ==> O(1)
-     * where C=119 is a constant and doesn't change with count of transactions
+     * where C=61 is a constant and doesn't change with count of transactions
     */
     private Map<Long, Statistics> statisticsConcurrentHashMap = new ConcurrentHashMap<>();
 
@@ -96,6 +96,7 @@ public class TransactionStatisticsService {
         log.info("Current size of transactionsMap before cleanup :: "+statisticsConcurrentHashMap.size());
         Set<Long> keysToRemove = statisticsConcurrentHashMap.keySet().stream().filter(ApplicationUtil::isPastMinuteTimeStamp).collect(Collectors.toSet());
         keysToRemove.forEach(statisticsConcurrentHashMap::remove);
+        keysToRemove.clear();
         log.info("Current size of transactionsMap after cleanup :: "+statisticsConcurrentHashMap.size());
         log.info("Releasing writeLock after cleaning up past minute stats!");
         readWriteLock.writeLock().unlock();
