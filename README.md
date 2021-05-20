@@ -93,7 +93,7 @@ Host: localhost:8080
 
 ##### Response
 Returns: The computed statistics for all the posted transaction or empty if there are no transactions present.
- 
+
 ```http
 HTTP/1.1 200
 Content-Type: application/json;charset=UTF-8
@@ -158,6 +158,33 @@ $ mvn integration-test
 
 
 >         Developed in Jetbrain's IntelliJ IDE
+
+## 2019 Attempt: FAIL
+*Some of the feedback given were:*
+*PROS:*
+- good test coverage
+- good separation of concerns
+*CONS:*
+- did not meet the requirements (O(n) solution, does not clean up, not thread-safe everywhere)
+
+
+
+## 2021 feedback: PASS
+*Coding challenge feedback:*
+* Unit test were added to `src/it` which is not allowed (as stated in problem statement) and that is why unit tests were missed in the first review.
+* Using reflection in unit test to set fields is not the best practice. The object could have been injected as a dependency and be mocked later rather then setting them using reflection
+* Usage of ConcurrentHashMap in conjunction with Reentrant lock is not really required since ConcurrentHashMap is thread safe out of the box. Also usage reentrant locks the whole HashMap for every read and write which is not an optimised solution.
+* The solution is implemented correctly and is good enough for a Mid level.
+
+## References
+- https://codereview.stackexchange.com/questions/173545/rest-api-for-realtime-statistics-of-last-60-seconds
+- https://softwareengineering.stackexchange.com/questions/356460/realtime-statistics-of-last-60-seconds-with-o1-time-and-memory
+- https://stackoverflow.com/questions/63860391/stock-statistics-calculation-with-o1-time-and-space-complexity
+- https://stackoverflow.com/questions/52200697/live-statistics-in-o1-space-and-time
+- https://medium.com/@jerilkuruvila/simple-and-elegant-web-service-design-completely-decoupled-49d0901c5360
+- https://rrgfthrt.blogspot.com/2018/11/rest-api-for-realtime-statistics-of.html
+- https://stackoverflow.com/questions/559839/big-o-summary-for-java-collections-framework-implementations/559862#559862
+
 
 ## License
 
