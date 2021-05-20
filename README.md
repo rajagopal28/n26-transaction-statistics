@@ -161,9 +161,11 @@ $ mvn integration-test
 
 ## 2019 Attempt: FAIL
 *Some of the feedback given were:*
+
 *PROS:*
 - good test coverage
 - good separation of concerns
+
 *CONS:*
 - did not meet the requirements (O(n) solution, does not clean up, not thread-safe everywhere)
 
