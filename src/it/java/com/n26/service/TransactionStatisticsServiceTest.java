@@ -224,7 +224,7 @@ public class TransactionStatisticsServiceTest extends TestCase {
 
 
     @Test
-    public void shouldCleanupStatisticsFromPastMinute_Functional() throws Exception {
+    public void shouldCleanupStatisticsFromPastSecond_Functional() throws Exception {
         Map<Long, Statistics> mockMap = new HashMap<>();
         ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
         Long now = Instant.now().getEpochSecond();
@@ -239,11 +239,11 @@ public class TransactionStatisticsServiceTest extends TestCase {
         ReflectionTestUtils.setField(transactionStatisticsService, "readWriteLock", readWriteLock);
         transactionStatisticsService.cleanupPastTransactions();
 
-        Assert.assertEquals(3, mockMap.size());
+        Assert.assertEquals(1, mockMap.size());
     }
 
     @Test
-    public void shouldCleanupStatisticsFromPastMinute_MockObservable() {
+    public void shouldCleanupStatisticsFromPastSecond_MockObservable() {
         Map<Long, Statistics> mockMap = Mockito.mock(Map.class);
         Mockito.when(mockMap.size()).thenReturn(5);
         Long now = Instant.now().getEpochSecond();
@@ -260,6 +260,8 @@ public class TransactionStatisticsServiceTest extends TestCase {
         Mockito.verify(mockLock, Mockito.times(2)).writeLock();
         Mockito.verify(mockWriteLock).lock();
         Mockito.verify(mockWriteLock).unlock();
+        Mockito.verify(mockMap).remove(now-10);
+        Mockito.verify(mockMap).remove(now-60);
         Mockito.verify(mockMap).remove(now-70);
         Mockito.verify(mockMap).remove(now-80);
     }

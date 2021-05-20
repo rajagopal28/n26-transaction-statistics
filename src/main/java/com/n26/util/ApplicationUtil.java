@@ -75,6 +75,16 @@ public interface ApplicationUtil {
     }
 
     /**
+     * Method to validate whether the given timestamp second is a past timestamp existing before current second
+     *
+     * @return boolean indicating whether the given timestamp second is a past timestamp before this very second
+     * */
+    static boolean isPastSecondTimeStamp(Long timestamp) {
+        long now = Instant.now().getEpochSecond();
+        return timestamp < now;
+    }
+
+    /**
      * Method to get the time difference between the given string timestamp against the current timestamp in seconds
      *
      * @return Long value indicating the time difference in seconds

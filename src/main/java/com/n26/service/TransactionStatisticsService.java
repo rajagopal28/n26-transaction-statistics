@@ -94,7 +94,7 @@ public class TransactionStatisticsService {
         log.info("Acquiring writeLock for cleaning up past minute stats!");
         readWriteLock.writeLock().lock();
         log.info("Current size of transactionsMap before cleanup :: "+statisticsConcurrentHashMap.size());
-        Set<Long> keysToRemove = statisticsConcurrentHashMap.keySet().stream().filter(ApplicationUtil::isPastMinuteTimeStamp).collect(Collectors.toSet());
+        Set<Long> keysToRemove = statisticsConcurrentHashMap.keySet().stream().filter(ApplicationUtil::isPastSecondTimeStamp).collect(Collectors.toSet());
         keysToRemove.forEach(statisticsConcurrentHashMap::remove);
         keysToRemove.clear();
         log.info("Current size of transactionsMap after cleanup :: "+statisticsConcurrentHashMap.size());

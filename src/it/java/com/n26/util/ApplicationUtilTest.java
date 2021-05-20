@@ -42,6 +42,13 @@ public class ApplicationUtilTest extends TestCase {
     }
 
     @Test
+    public void testGetPastSecondTimeStamp_FromGivenTimeToNow() {
+        Assert.assertFalse(ApplicationUtil.isPastSecondTimeStamp(Instant.now().plusMillis(5000).getEpochSecond()));
+        Assert.assertTrue(ApplicationUtil.isPastSecondTimeStamp(Instant.now().minusMillis(61000).getEpochSecond()));
+        Assert.assertFalse(ApplicationUtil.isPastSecondTimeStamp(Instant.now().getEpochSecond()));
+    }
+
+    @Test
     public void testIsValidTransactionData_FailureCases() {
         TransactionVO txn = new TransactionVO();
         try{
