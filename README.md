@@ -159,18 +159,6 @@ $ mvn integration-test
 
 >         Developed in Jetbrain's IntelliJ IDE
 
-## 2019 Attempt: FAIL
-*Some of the feedback given were:*
-
-*PROS:*
-- good test coverage
-- good separation of concerns
-
-*CONS:*
-- did not meet the requirements (O(n) solution, does not clean up, not thread-safe everywhere)
-
-
-
 ## 2021 feedback: PASS
 *Coding challenge feedback:*
 * Unit test were added to `src/it` which is not allowed (as stated in problem statement) and that is why unit tests were missed in the first review.
